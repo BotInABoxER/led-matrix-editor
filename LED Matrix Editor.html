@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>LED Matrix Editor</title>
+  <link href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Major+Mono+Display|VT323&display=swap" rel="stylesheet">
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" rel="stylesheet">
+  <link href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" rel="stylesheet">
+  <link href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+</head>
+<body>
+  <style id="webmakerstyle">
+        body {
+            text-align: center;
+        }
+        
+        button {
+            box-sizing: border-box;
+            font-size: 13px;
+            height: 30px;
+        }
+        
+        table.leds,
+        table.cols,
+        table.rows {
+            border-spacing: 5px;
+        }
+        
+        table.leds {
+            background-color: #333;
+            box-shadow: 1px 1px 10px #333;
+        }
+        
+        table.leds td,
+        table.cols td,
+        table.rows td {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 20px;
+            font-family: "Major Mono Display", monospace;
+            color: white;
+            padding: 2px;
+        }
+        
+        table.leds td {
+            border-radius: 50%;
+            box-shadow: inset 0 0 1px #666666;
+            background: lightgrey radial-gradient(ellipse at center, lightgrey 0%, white 50%, lightgrey 100%);
+        }
+        
+        table.leds td.active {
+            background: orangered radial-gradient(ellipse at center, lightcoral 0%, orangered 50%, red 100%);
+        }
+        
+        table.cols td.hover,
+        table.rows td.hover,
+        table.cols td:hover,
+        table.rows td:hover {
+            color: orangered;
+            font-weight: bold;
+            font-family: "Major Mono Display", monospace;
+        }
+        
+        .tap-target {
+            margin: 10% auto;
+            border-radius: 100%;
+            font-size: 1.125em;
+            text-align: center;
+            color: #fff;
+            background-color: #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .button,
+        h1,
+        h2,
+        .copier {
+            font-family: "Major Mono Display", monospace;
+            font-weight: bold;
+        }
+        
+        textarea {
+            border-radius: 10%;
+            padding: 1em;
+            height: 15em;
+            width: 15em;
+            outline: none;
+            overflow: auto;
+        }
+        
+        .swal-modal {
+            font-family: 'Major Mono Display', monospace;
+            font-weight: bold;
+        }
+        
+        div.green {
+            background-color: rgb(20, 145, 1);
+            border-radius: 5%;
+            padding: 5px;
+        }
+  </style><br>
+  <h1>led matrix editor for johnny-five</h1><br>
+  <div class="pure-g">
+    <div class="pure-u-1-12"></div>
+    <div class="pure-u-20-24 green">
+      <div class="led-matrix-table">
+        <table style="display: inline-block; text-align: center;">
+          <tbody>
+            <tr>
+              <td></td>
+              <td id="cols">
+                <table class="cols">
+                  <tbody>
+                    <tr>
+                      <td class="" data-col="1"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">1</font></font></td>
+                      <td class="" data-col="2"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">2</font></font></td>
+                      <td class="" data-col="3"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">3</font></font></td>
+                      <td class="" data-col="4"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">4</font></font></td>
+                      <td class="" data-col="5"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">5</font></font></td>
+                      <td class="" data-col="6"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">6</font></font></td>
+                      <td class="" data-col="7"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">7</font></font></td>
+                      <td class="" data-col="8"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">8</font></font></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+              <td class="note" id="indexSelectsWhole" style="padding-left: 30px; cursor: pointer;"><font style=
+              "vertical-align: inherit;"></font></td>
+            </tr>
+            <tr>
+              <td id="rows">
+                <table class="rows">
+                  <tbody>
+                    <tr>
+                      <td class="" data-row="1"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">1</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="2"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">2</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="3"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">3</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="4"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">4</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="5"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">5</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="6"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">6</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="7"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">7</font></font></td>
+                    </tr>
+                    <tr>
+                      <td class="" data-row="8"><font style="vertical-align: inherit;"><font style=
+                      "vertical-align: inherit;">8</font></font></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+              <td id="leds">
+                <table class="leds">
+                  <tbody>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="1" id="1-1"></td>
+                      <td class="tap-target" data-col="2" data-row="1" id="1-2"></td>
+                      <td class="tap-target" data-col="3" data-row="1" id="1-3"></td>
+                      <td class="tap-target" data-col="4" data-row="1" id="1-4"></td>
+                      <td class="tap-target" data-col="5" data-row="1" id="1-5"></td>
+                      <td class="tap-target" data-col="6" data-row="1" id="1-6"></td>
+                      <td class="tap-target" data-col="7" data-row="1" id="1-7"></td>
+                      <td class="tap-target" data-col="8" data-row="1" id="1-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="2" id="2-1"></td>
+                      <td class="tap-target" data-col="2" data-row="2" id="2-2"></td>
+                      <td class="tap-target" data-col="3" data-row="2" id="2-3"></td>
+                      <td class="tap-target" data-col="4" data-row="2" id="2-4"></td>
+                      <td class="tap-target" data-col="5" data-row="2" id="2-5"></td>
+                      <td class="tap-target" data-col="6" data-row="2" id="2-6"></td>
+                      <td class="tap-target" data-col="7" data-row="2" id="2-7"></td>
+                      <td class="tap-target" data-col="8" data-row="2" id="2-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="3" id="3-1"></td>
+                      <td class="tap-target" data-col="2" data-row="3" id="3-2"></td>
+                      <td class="tap-target" data-col="3" data-row="3" id="3-3"></td>
+                      <td class="tap-target" data-col="4" data-row="3" id="3-4"></td>
+                      <td class="tap-target" data-col="5" data-row="3" id="3-5"></td>
+                      <td class="tap-target" data-col="6" data-row="3" id="3-6"></td>
+                      <td class="tap-target" data-col="7" data-row="3" id="3-7"></td>
+                      <td class="tap-target" data-col="8" data-row="3" id="3-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="4" id="4-1"></td>
+                      <td class="tap-target" data-col="2" data-row="4" id="4-2"></td>
+                      <td class="tap-target" data-col="3" data-row="4" id="4-3"></td>
+                      <td class="tap-target" data-col="4" data-row="4" id="4-4"></td>
+                      <td class="tap-target" data-col="5" data-row="4" id="4-5"></td>
+                      <td class="tap-target" data-col="6" data-row="4" id="4-6"></td>
+                      <td class="tap-target" data-col="7" data-row="4" id="4-7"></td>
+                      <td class="tap-target" data-col="8" data-row="4" id="4-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="5" id="5-1"></td>
+                      <td class="tap-target" data-col="2" data-row="5" id="5-2"></td>
+                      <td class="tap-target" data-col="3" data-row="5" id="5-3"></td>
+                      <td class="tap-target" data-col="4" data-row="5" id="5-4"></td>
+                      <td class="tap-target" data-col="5" data-row="5" id="5-5"></td>
+                      <td class="tap-target" data-col="6" data-row="5" id="5-6"></td>
+                      <td class="tap-target" data-col="7" data-row="5" id="5-7"></td>
+                      <td class="tap-target" data-col="8" data-row="5" id="5-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="6" id="6-1"></td>
+                      <td class="tap-target" data-col="2" data-row="6" id="6-2"></td>
+                      <td class="tap-target" data-col="3" data-row="6" id="6-3"></td>
+                      <td class="tap-target" data-col="4" data-row="6" id="6-4"></td>
+                      <td class="tap-target" data-col="5" data-row="6" id="6-5"></td>
+                      <td class="tap-target" data-col="6" data-row="6" id="6-6"></td>
+                      <td class="tap-target" data-col="7" data-row="6" id="6-7"></td>
+                      <td class="tap-target" data-col="8" data-row="6" id="6-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="7" id="7-1"></td>
+                      <td class="tap-target" data-col="2" data-row="7" id="7-2"></td>
+                      <td class="tap-target" data-col="3" data-row="7" id="7-3"></td>
+                      <td class="tap-target" data-col="4" data-row="7" id="7-4"></td>
+                      <td class="tap-target" data-col="5" data-row="7" id="7-5"></td>
+                      <td class="tap-target" data-col="6" data-row="7" id="7-6"></td>
+                      <td class="tap-target" data-col="7" data-row="7" id="7-7"></td>
+                      <td class="tap-target" data-col="8" data-row="7" id="7-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="tap-target" data-col="1" data-row="8" id="8-1"></td>
+                      <td class="tap-target" data-col="2" data-row="8" id="8-2"></td>
+                      <td class="tap-target" data-col="3" data-row="8" id="8-3"></td>
+                      <td class="tap-target" data-col="4" data-row="8" id="8-4"></td>
+                      <td class="tap-target" data-col="5" data-row="8" id="8-5"></td>
+                      <td class="tap-target" data-col="6" data-row="8" id="8-6"></td>
+                      <td class="tap-target" data-col="7" data-row="8" id="8-7"></td>
+                      <td class="tap-target" data-col="8" data-row="8" id="8-8"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div><br>
+      <button class="button" onclick="checkIt()">submit</button>
+    </div>
+    <div class="pure-u-1-12"></div>
+  </div><br>
+  <div class="pure-g">
+    <div class="pure-u-1-3"></div>
+    <div class="pure-u-1-3">
+      <hr>
+      <hr>
+      <hr>
+    </div>
+    <div class="pure-u-1-3"></div>
+  </div>
+  <h2>output:</h2>
+  <textarea id="results" placeholder="let frame1 = [ ];"></textarea><br>
+  <button class="copier" data-clipboard-target="#results">copy to clipboard</button><br>
+  <script src="https://unpkg.com/interactjs@next">
+  </script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js">
+  </script> 
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js">
+  </script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pablo/0.4.0/pablo.min.js">
+  </script> 
+  <script src="https://webmaker.app/app/lib/transpilers/babel-polyfill.min.js">
+  </script>
+  <script>
+  'use strict';
+
+  var clipboard = new ClipboardJS('.copier');
+  clipboard.on('success', function (e) {
+
+  swal({
+    text: "successfully copied!",
+    className: "swal-modal"
+  });
+  });
+
+  var matrixRow1 = [];
+  var matrixRow2 = [];
+  var matrixRow3 = [];
+  var matrixRow4 = [];
+  var matrixRow5 = [];
+  var matrixRow6 = [];
+  var matrixRow7 = [];
+  var matrixRow8 = [];
+
+  interact('.tap-target').on('tap', function (event) {
+  event.currentTarget.classList.toggle('active');
+  event.preventDefault();
+  });
+
+  function checkIt() {
+
+  /* Yes, I know this needs to be refactored... */
+
+  if (document.getElementById('1-1').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-2').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-3').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-4').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-5').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-6').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-7').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+  if (document.getElementById('1-8').classList.contains("active")) {
+    matrixRow1.push("1");
+  } else {
+    matrixRow1.push("0");
+  };
+
+  if (document.getElementById('2-1').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-2').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-3').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-4').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-5').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-6').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-7').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+  if (document.getElementById('2-8').classList.contains("active")) {
+    matrixRow2.push("1");
+  } else {
+    matrixRow2.push("0");
+  };
+
+  if (document.getElementById('3-1').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-2').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-3').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-4').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-5').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-6').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-7').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+  if (document.getElementById('3-8').classList.contains("active")) {
+    matrixRow3.push("1");
+  } else {
+    matrixRow3.push("0");
+  };
+
+  if (document.getElementById('4-1').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-2').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-3').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-4').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-5').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-6').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-7').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+  if (document.getElementById('4-8').classList.contains("active")) {
+    matrixRow4.push("1");
+  } else {
+    matrixRow4.push("0");
+  };
+
+  if (document.getElementById('5-1').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-2').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-3').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-4').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-5').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-6').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-7').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+  if (document.getElementById('5-8').classList.contains("active")) {
+    matrixRow5.push("1");
+  } else {
+    matrixRow5.push("0");
+  };
+
+  if (document.getElementById('6-1').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-2').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-3').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-4').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-5').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-6').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-7').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+  if (document.getElementById('6-8').classList.contains("active")) {
+    matrixRow6.push("1");
+  } else {
+    matrixRow6.push("0");
+  };
+
+  if (document.getElementById('7-1').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-2').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-3').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-4').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-5').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-6').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-7').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+  if (document.getElementById('7-8').classList.contains("active")) {
+    matrixRow7.push("1");
+  } else {
+    matrixRow7.push("0");
+  };
+
+  if (document.getElementById('8-1').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-2').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-3').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-4').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-5').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-6').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-7').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+  if (document.getElementById('8-8').classList.contains("active")) {
+    matrixRow8.push("1");
+  } else {
+    matrixRow8.push("0");
+  };
+
+  document.getElementById("results").innerHTML = 'let frame1 = [\n "' + matrixRow1.join("") + '",\n "' + matrixRow2.join("") + '",\n "' + matrixRow3.join("") + '",\n "' + matrixRow4.join("") + '",\n "' + matrixRow5.join("") + '",\n "' + matrixRow6.join("") + '",\n "' + matrixRow7.join("") + '",\n "' + matrixRow8.join("") + '"\n];';
+  };
+  //# sourceURL=userscript.js
+  </script>
+</body>
+</html>
